@@ -2,27 +2,30 @@ import { getRepository } from 'typeorm';
 
 import { Parent } from 'orm/entities/users/Parent.entity';
 
-export class ParentsService {
-  private repo = getRepository(Parent);
+import { CreateParentDto, UpdateParentDto } from '../dtos/parent.dto';
 
-  findAll() {
-    return this.repo.find({ relations: ['children'] });
+export class ParentService {
+  private parentRepo = getRepository(Parent);
+
+  async create(data: CreateParentDto) {
+    const parent = this.parentRepo.create(data);
+    return this.parentRepo.save(parent);
   }
 
-  findOne(id: number) {
-    return this.repo.findOne({ where: { id }, relations: ['children'] });
+  async findAll() {
+    return this.parentRepo.find({ relations: ['children'] });
   }
 
-  create(data: Partial<Parent>) {
-    const entity = this.repo.create(data);
-    return this.repo.save(entity);
+  async findOne(id: number) {
+    return this.parentRepo.findOne(id, { relations: ['children'] });
   }
 
-  update(id: number, data: Partial<Parent>) {
-    return this.repo.update(id, data);
+  async update(id: number, data: UpdateParentDto) {
+    await this.parentRepo.update(id, data);
+    return this.findOne(id);
   }
 
-  delete(id: number) {
-    return this.repo.delete(id);
+  async remove(id: number) {
+    return this.parentRepo.delete(id);
   }
 }

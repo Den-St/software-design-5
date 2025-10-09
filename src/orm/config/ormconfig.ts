@@ -13,11 +13,9 @@ const config: ConnectionOptions = {
   logging: false,
   entities: ['src/orm/entities/**/*.ts'],
   migrations: ['src/orm/migrations/**/*.ts'],
-  subscribers: ['src/orm/subscriber/**/*.ts'],
   cli: {
     entitiesDir: 'src/orm/entities',
     migrationsDir: 'src/orm/migrations',
-    subscribersDir: 'src/orm/subscriber',
   },
   namingStrategy: new SnakeNamingStrategy(),
 };

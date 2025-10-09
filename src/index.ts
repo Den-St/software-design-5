@@ -11,16 +11,13 @@ import morgan from 'morgan';
 
 import './utils/response/customSuccess';
 import { errorHandler } from './middleware/errorHandler';
-import { getLanguage } from './middleware/getLanguage';
 import { dbCreateConnection } from './orm/dbCreateConnection';
-import routes from './routes';
 
 export const app = express();
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(getLanguage);
 
 try {
   const accessLogStream = fs.createWriteStream(path.join(__dirname, '../log/access.log'), {
@@ -32,15 +29,22 @@ try {
 }
 app.use(morgan('combined'));
 
-app.use('/', routes);
-
-app.use(errorHandler);
-
 const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
 
 (async () => {
   await dbCreateConnection();
+  console.log('✅ DB connection established, now loading routes...');
+
+  // 👇 Імпортуємо маршрути лише після створення з’єднання
+  const parentRoutes = (await import('./routes/parent.routes')).default;
+  const studentRoutes = (await import('./routes/student.routes')).default;
+
+  app.use('/parents', parentRoutes);
+  app.use('/students', studentRoutes);
+
+  app.use(errorHandler);
+
+  app.listen(port, () => {
+    console.log(`🚀 Server running on port ${port}`);
+  });
 })();
