@@ -1,14 +1,20 @@
 import { Router } from 'express';
 
-import { StudentController } from '../controllers/student.controller';
+import { catchAsync } from 'utils/catchAsync';
+
+import { createStudent } from '../controllers/students/createStudent';
+import { deleteStudent } from '../controllers/students/deleteStudent';
+import { findAllStudents } from '../controllers/students/findAllStudents';
+import { findOneStudent } from '../controllers/students/findOneStudent';
+import { updateStudent } from '../controllers/students/updateStudent';
+import { validateCreateStudent } from '../middleware/validation/students/validateCreateStudent';
 
 const router = Router();
-const controller = new StudentController();
 
-router.post('/', controller.create.bind(controller));
-router.get('/', controller.findAll.bind(controller));
-router.get('/:id', controller.findOne.bind(controller));
-router.put('/:id', controller.update.bind(controller));
-router.delete('/:id', controller.remove.bind(controller));
+router.post('/', validateCreateStudent, catchAsync(createStudent));
+router.get('/', catchAsync(findAllStudents));
+router.get('/:id', catchAsync(findOneStudent));
+router.put('/:id', catchAsync(updateStudent));
+router.delete('/:id', catchAsync(deleteStudent));
 
-export default router;
+export { router as studentRoutes };

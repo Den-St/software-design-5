@@ -9,42 +9,72 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import './utils/response/customSuccess';
-import { errorHandler } from './middleware/errorHandler';
 import { dbCreateConnection } from './orm/dbCreateConnection';
 
-export const app = express();
+const app = express();
+
+// --- Middleware setup ---
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+// --- Logging setup ---
 try {
-  const accessLogStream = fs.createWriteStream(path.join(__dirname, '../log/access.log'), {
-    flags: 'a',
-  });
+  const logDir = path.join(__dirname, '../log');
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  const accessLogStream = fs.createWriteStream(path.join(logDir, 'access.log'), { flags: 'a' });
   app.use(morgan('combined', { stream: accessLogStream }));
 } catch (err) {
-  console.log(err);
+  console.error('Failed to create log stream:', err);
 }
-app.use(morgan('combined'));
+
+// Also log to console
+app.use(morgan('dev'));
 
 const port = process.env.PORT || 4000;
 
+// --- Start server ---
 (async () => {
-  await dbCreateConnection();
-  console.log('✅ DB connection established, now loading routes...');
+  try {
+    await dbCreateConnection();
+    console.log('✅ Database connection established.');
 
-  // 👇 Імпортуємо маршрути лише після створення з’єднання
-  const parentRoutes = (await import('./routes/parent.routes')).default;
-  const studentRoutes = (await import('./routes/student.routes')).default;
+    // Import routes only after DB connection is ready
+    const parentRoutes = (await import('./routes/parent.routes')).parentRoutes;
+    const studentRoutes = (await import('./routes/student.routes')).studentRoutes;
 
-  app.use('/parents', parentRoutes);
-  app.use('/students', studentRoutes);
+    // Register routes
+    app.use('/parents', parentRoutes);
+    app.use('/students', studentRoutes);
 
-  app.use(errorHandler);
+    // Default route
+    app.get('/', (_req, res) => res.send('🚀 API is running'));
 
-  app.listen(port, () => {
-    console.log(`🚀 Server running on port ${port}`);
-  });
+    // Global error handler
+    app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+      console.error('❌ Error:', err);
+
+      // Detect TypeORM duplicate key, validation, etc.
+      if (err.code === '23505') {
+        return res.status(400).json({ message: 'Duplicate value violates unique constraint' });
+      }
+
+      // If the error has a message, show it; otherwise fallback
+      res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+      });
+      return null;
+    });
+
+    app.listen(port, () => {
+      console.log(`🚀 Server running at http://localhost:${port}`);
+    });
+  } catch (err) {
+    console.error('❌ Failed to start server:', err);
+    process.exit(1);
+  }
 })();

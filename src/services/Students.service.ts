@@ -1,9 +1,7 @@
 import { getRepository } from 'typeorm';
 
+import { CreateStudentDto, UpdateStudentDto } from 'dtos/student.dto';
 import { Student } from 'orm/entities/users/Student.entity';
-
-import { CreateStudentDto, UpdateStudentDto } from '../dtos/student.dto';
-
 export class StudentService {
   private studentRepo = getRepository(Student);
 
