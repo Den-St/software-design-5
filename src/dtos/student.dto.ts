@@ -1,4 +1,4 @@
-import { IsString, IsDateString, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsDateString, IsOptional, IsInt, IsArray } from 'class-validator';
 
 import { Student } from '../orm/entities/users/Student.entity';
 
@@ -11,7 +11,6 @@ export class StudentResponseDTO {
   parentId: number;
 
   constructor(student: Student) {
-    console.log('Mapping Student entity to StudentResponseDTO:', student);
     this.id = student.id;
     this.firstName = student.first_name;
     this.lastName = student.last_name;
@@ -58,4 +57,13 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsInt()
   parent_id?: number;
+}
+
+export class AssignParentDto {
+  @IsArray()
+  @IsInt({ each: true })
+  studentIds: number[];
+
+  @IsInt()
+  parentId: number;
 }

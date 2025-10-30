@@ -11,7 +11,6 @@ export const dbCreateConnection = async (): Promise<Connection | null> => {
       const activeConnection = getConnectionManager().get(config.name);
       return activeConnection;
     }
-    console.log('123', err);
   }
   return null;
 };

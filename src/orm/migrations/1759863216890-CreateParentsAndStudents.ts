@@ -11,7 +11,7 @@ export class CreateParentsAndStudents1759863216890 implements MigrationInterface
                 "last_name" character varying(50) NOT NULL,
                 "birth_date" date NOT NULL,
                 "phone" character varying(20) NOT NULL,
-                "parent_id" integer NOT NULL,
+                "parent_id" integer,
                 CONSTRAINT "UQ_317b86154bca256bdf5432f134c" UNIQUE ("phone"),
                 CONSTRAINT "PK_7d7f07271ad4ce999880713f05e" PRIMARY KEY ("id")
             )

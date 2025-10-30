@@ -19,7 +19,7 @@ export class Student {
   @Column({ type: 'varchar', length: 20, unique: true })
   phone: string;
 
-  @ManyToOne(() => Parent, (parent) => parent.children, { nullable: false })
+  @ManyToOne(() => Parent, (parent) => parent.children, { nullable: true })
   @JoinColumn({ name: 'parent_id' })
   parent: Parent;
 }
